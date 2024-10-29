@@ -253,11 +253,12 @@ public class DrivingCrossaints extends OpMode {
         double frontRightPower = drive - strafe - rotate;
         double backLeftPower = drive - strafe + rotate;
         double backRightPower = drive + strafe - rotate;
-        if(gamepad2.b) {
-            frontLeftPower = frontLeftPower*0.5;
-            frontRightPower = frontRightPower*0.5;
-            backLeftPower = frontRightPower*0.5;
-
+        if(!gamepad2.b) {
+            double slowFactor = 0.5;
+            frontLeftPower = frontLeftPower*slowFactor;
+            frontRightPower = frontRightPower*slowFactor;
+            backLeftPower = backLeftPower*slowFactor;
+            backRightPower = backRightPower*slowFactor;
         }
         frontLeft.setPower(frontLeftPower);
         frontRight.setPower(frontRightPower);
