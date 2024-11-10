@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+@Config
 @TeleOp
 //@Disabled
 public class DrivingCrossaints extends OpMode {
@@ -25,7 +27,7 @@ public class DrivingCrossaints extends OpMode {
     We can multiply these two ratios together to get our final reduction of ~254.47:1.
     The motor's encoder counts 28 times per rotation. So in total you should see about 7125.16
     counts per rotation of the arm. We divide that by 360 to get the counts per degree. */
-    final double ARM_TICKS_PER_DEGREE = 19.7924893140647; //exact fraction is (194481/9826)
+    public static double ARM_TICKS_PER_DEGREE = 19.7924893140647; //exact fraction is (194481/9826)
     public DcMotor  extend    = null;
 
     /* These constants hold the position that the arm is commanded to run to.
@@ -39,37 +41,46 @@ public class DrivingCrossaints extends OpMode {
     If you'd like it to move further, increase that number. If you'd like it to not move
     as far from the starting position, decrease it. */
 
-    public double ARM_COLLAPSED_INTO_ROBOT  = 0;
-    public double ARM_COLLECT               = 250 * ARM_TICKS_PER_DEGREE;
-    public double ARM_CLEAR_BARRIER         = 220 * ARM_TICKS_PER_DEGREE;
-    public double ARM_SCORE_SPECIMEN        = 160 * ARM_TICKS_PER_DEGREE;
-    public double ARM_SCORE_SAMPLE_IN_HIGH  = 130 * ARM_TICKS_PER_DEGREE;
-    public double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
-    public double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
-    public double ARM_EXTEND_HIGH_BASKET    = -1931;
-    public double ARM_EXTEND_PICK_UP    = -100;
-    public double ARM_EXTEND_RESET = 0;
+    public static double ARM_SPEED_UP  = 3000;
+    public static double ARM_SPEED_DOWN  = 1200;
+    public static double EXTEND_SPEED  = 3000;
 
+    public static double ARM_COLLAPSED_INTO_ROBOT  = 0;
+    public static double ARM_COLLECT               = 0;
+    public static double ARM_CLEAR_BARRIER         = 700;
+    public static double ARM_SCORE_SPECIMEN        = 160 * ARM_TICKS_PER_DEGREE;
+    public static double ARM_SCORE_SAMPLE_IN_HIGH  = 1800;
+    public static double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
+    public static double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
+    public static double ARM_EXTEND_HIGH_BASKET    = -2200;
+    public static double ARM_EXTEND_PICK_UP    = -350;
+    public static double ARM_EXTEND_RESET = 0;
+    public static double ARM_EXTEND_SUBMERSE = -1200;
+    public static double ARM_SUBMERSIBLE = 200;
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
-    public double INTAKE_COLLECT    = -1.0;
-    public double INTAKE_OFF        =  0.0;
-    public double INTAKE_DEPOSIT    =  0.5;
+    public static double INTAKE_COLLECT    = -1.0;
+    public static double INTAKE_OFF        =  0.0;
+    public static double INTAKE_DEPOSIT    =  0.25;
 
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
-    public double WRIST_FOLDED_IN   = 1;
-    public double WRIST_FOLDED_OUT  = 0.5;
+    public static double WRIST_FOLDED_IN   = 0.2;
+    public static double WRIST_FOLDED_OUT  = 0.67;
+    public static double WRIST_WIGGLE = 0.05;
+    public static double WRIST_WIGGLE_TIME_SEC = 1.0;
 
     /* A number in degrees that the triggers can adjust the arm position by */
-    public double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
+    public static double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
 
     /* Variables that are used to set the arm to a specific position */
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
+    public double wristPosition = WRIST_FOLDED_IN;
     private DcMotor frontLeft;
     private DcMotor frontRight;
     private DcMotor backLeft;
     private DcMotor backRight;
     double extendPosition = 0;
+    double armSpeed = ARM_SPEED_UP;
     @Override
     public void init() {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
@@ -126,36 +137,38 @@ public class DrivingCrossaints extends OpMode {
 
         /* Make sure that the intake is off, and the wrist is folded in. */
         intake.setPower(INTAKE_OFF);
-        wrist.setPosition(WRIST_FOLDED_IN);
+        wrist.setPosition(wristPosition);
 
         /* Send telemetry message to signify robot waiting */
         telemetry.addLine("Robot Ready.");
         telemetry.update();
 
     }
-
-
+    boolean isWiggling = false;
+    boolean firstLoop = true;
     @Override
     public void loop() {
-
+        if (firstLoop) {
+            firstLoop = false;
+            wristPosition = WRIST_FOLDED_OUT;
+        }
         if (gamepad1.a) {
             intake.setPower(INTAKE_COLLECT);
+            isWiggling = true;
         }
         else if (gamepad1.x) {
             intake.setPower(INTAKE_OFF);
+            isWiggling = false;
         }
         else if (gamepad1.b) {
             intake.setPower(INTAKE_DEPOSIT);
+            isWiggling = false;
         }
-        armPositionFudgeFactor = FUDGE_FACTOR * (gamepad1.right_trigger + (-gamepad1.left_trigger));
-
-//      this on the gamepad 2(aka driver 2) makes it slower for more presion for the robot
-
-
-
-        if(gamepad1.right_bumper) {
+        else if (gamepad1.right_bumper) {
+            isWiggling = true;
             armPosition = ARM_COLLECT;
-            wrist.setPosition(WRIST_FOLDED_OUT);
+            armSpeed = ARM_SPEED_DOWN;
+            wristPosition = WRIST_FOLDED_OUT;
             intake.setPower(INTAKE_COLLECT);
             extendPosition = ARM_EXTEND_PICK_UP;
         }
@@ -163,49 +176,63 @@ public class DrivingCrossaints extends OpMode {
         else if (gamepad1.left_bumper){
             armPosition = ARM_CLEAR_BARRIER;
             extendPosition = ARM_EXTEND_RESET;
+            wristPosition = WRIST_FOLDED_OUT;
         }
 
         else if (gamepad1.y){
             armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
+            armSpeed = ARM_SPEED_UP;
             extendPosition = ARM_EXTEND_HIGH_BASKET;
+            wristPosition = WRIST_FOLDED_OUT;
+            isWiggling = false;
         }
 
         else if (gamepad1.dpad_left) { /* This turns off the intake, folds in the wrist, and moves the arm back to folded inside the robot. This is also the starting configuration */
             armPosition = ARM_COLLAPSED_INTO_ROBOT;
             intake.setPower(INTAKE_OFF);
-            wrist.setPosition(WRIST_FOLDED_IN);
+            wristPosition = WRIST_FOLDED_OUT;
             extendPosition = ARM_EXTEND_RESET;
+            isWiggling = false;
         }
 
         else if (gamepad1.dpad_right){
-            /* This is the correct height to score SPECIMEN on the HIGH CHAMBER */
-            armPosition = ARM_SCORE_SPECIMEN;
-            wrist.setPosition(WRIST_FOLDED_IN);
+            /**/
+            armPosition = ARM_SUBMERSIBLE;
+            extendPosition = ARM_EXTEND_SUBMERSE;
+            isWiggling = true;
+            intake.setPower(INTAKE_COLLECT);
         }
 
         else if (gamepad1.dpad_up){
-            /* This sets the arm to vertical to hook onto the LOW RUNG for hanging */
-            armPosition = ARM_ATTACH_HANGING_HOOK;
-            intake.setPower(INTAKE_OFF);
-            wrist.setPosition(WRIST_FOLDED_IN);
+
+            wristPosition = WRIST_FOLDED_OUT;
+            isWiggling = false;
         }
 
         else if (gamepad1.dpad_down){
             /* this moves the arm down to lift the robot up once it has been hooked */
             armPosition = ARM_WINCH_ROBOT;
             intake.setPower(INTAKE_OFF);
-            wrist.setPosition(WRIST_FOLDED_IN);
+            wristPosition = WRIST_FOLDED_IN;
+        }
+
+        if (isWiggling){
+            double wiggle = WRIST_WIGGLE*Math.cos(System.currentTimeMillis()/1000.0/WRIST_WIGGLE_TIME_SEC*2*Math.PI);
+            wrist.setPosition(wristPosition + wiggle);
+        }else {
+            wrist.setPosition(wristPosition);
         }
 
             /* Here we set the target position of our arm to match the variable that was selected
             by the driver.
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
+        armPositionFudgeFactor = FUDGE_FACTOR * (gamepad1.right_trigger + (-gamepad1.left_trigger));
         armMotor.setTargetPosition((int) (armPosition  +armPositionFudgeFactor));
-        ((DcMotorEx) armMotor).setVelocity(2100);
+        ((DcMotorEx) armMotor).setVelocity(armSpeed);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         extend.setTargetPosition((int) (extendPosition));
-        ((DcMotorEx) extend).setVelocity(1000);
+        ((DcMotorEx) extend).setVelocity(EXTEND_SPEED);
         extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             /* TECH TIP: Encoders, integers, and doubles
             Encoders report when the motor has moved a specified angle. They send out pulses which
@@ -240,19 +267,19 @@ public class DrivingCrossaints extends OpMode {
 
         telemetry.addData("extendTarget: ", extend.getTargetPosition());
         telemetry.addData("extend Encoder: ", extend.getCurrentPosition());
+
+        double drive =  gamepad1.left_stick_y; // Forward/Backward
+        double strafe = -gamepad1.left_stick_x; // Left/Right
+        double rotate = gamepad1.right_stick_x;
+        telemetry.addData("drive: ", drive);
+        telemetry.addData("strafe: ", strafe);
+        telemetry.addData("rotate: ", rotate);
         telemetry.update();
 
-        double drive = -gamepad1.left_stick_y; // Forward/Backward
-        double strafe = gamepad1.left_stick_x; // Left/Right
-        double rotate = gamepad1.right_stick_x;
-
-
-
-
-        double frontLeftPower = drive + strafe + rotate;
+        double frontLeftPower =  drive + strafe + rotate;
         double frontRightPower = drive - strafe - rotate;
-        double backLeftPower = drive - strafe + rotate;
-        double backRightPower = drive + strafe - rotate;
+        double backLeftPower =   drive - strafe + rotate;
+        double backRightPower =  drive + strafe - rotate;
         if(!gamepad2.b) {
             double slowFactor = 0.5;
             frontLeftPower = frontLeftPower*slowFactor;
