@@ -52,11 +52,14 @@ public class DrivingCrossaints extends OpMode {
     public static double ARM_SCORE_SAMPLE_IN_HIGH  = 1800;
     public static double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
     public static double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
-    public static double ARM_EXTEND_HIGH_BASKET    = -2200;
+    public static double ARM_EXTEND_HIGH_BASKET    = -2100;
     public static double ARM_EXTEND_PICK_UP    = -350;
     public static double ARM_EXTEND_RESET = 0;
     public static double ARM_EXTEND_SUBMERSE = -1200;
     public static double ARM_SUBMERSIBLE = 200;
+    public static double ARM_LOW_HANG1 = 1300;//put arm into posion to hang and exstend
+    public static double ARM_EXTEND_HANG = -1000 ;             //retract and pull arm down
+    public static double ARM_LOW_HANG2 = 1200;           //folds rest of body for full hang
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
     public static double INTAKE_COLLECT    = -1.0;
     public static double INTAKE_OFF        =  0.0;
@@ -148,6 +151,18 @@ public class DrivingCrossaints extends OpMode {
     boolean firstLoop = true;
     @Override
     public void loop() {
+        if(gamepad2.a){
+            armPosition=ARM_LOW_HANG1;
+            extendPosition=ARM_EXTEND_HANG;
+        }
+        if(gamepad2.b){
+            armPosition=ARM_LOW_HANG2;
+            extendPosition=0;
+        }
+        if(gamepad2.x){
+            armPosition=0;
+            extendPosition=0;
+        }
         if (firstLoop) {
             firstLoop = false;
             wristPosition = WRIST_FOLDED_OUT;
@@ -222,6 +237,20 @@ public class DrivingCrossaints extends OpMode {
         }else {
             wrist.setPosition(wristPosition);
         }
+
+        if (gamepad2.dpad_up){
+           armPosition =  ARM_LOW_HANG1;
+        }
+
+        if (gamepad2.dpad_right){
+
+        }
+
+        if (gamepad2.dpad_down){
+
+        }
+
+
 
             /* Here we set the target position of our arm to match the variable that was selected
             by the driver.

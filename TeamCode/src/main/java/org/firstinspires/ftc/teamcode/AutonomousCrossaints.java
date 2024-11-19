@@ -1,15 +1,22 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_EXTEND_HIGH_BASKET;
+import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SPEED_UP;
+import static org.firstinspires.ftc.teamcode.DrivingCrossaints.EXTEND_SPEED;
+import static org.firstinspires.ftc.teamcode.DrivingCrossaints.INTAKE_COLLECT;
+import static org.firstinspires.ftc.teamcode.DrivingCrossaints.INTAKE_OFF;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.WRIST_FOLDED_IN;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SCORE_SAMPLE_IN_HIGH;
+import static org.firstinspires.ftc.teamcode.DrivingCrossaints.WRIST_FOLDED_OUT;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -23,19 +30,16 @@ public class AutonomousCrossaints extends LinearOpMode {
     private DcMotor rightBackDrive = null;
     private DcMotor armMotor = null;
     private DcMotor extend = null;
-
+    public CRServo intake      = null; //the active intake servo
+    public Servo wrist       = null;
     // Constants for arm positions
-    public static double STRAFE_TIME = 2.5;
-    public static final double ARM_COLLAPSED_INTO_ROBOT = 0;
-    public static final double ARM_COLLECT = 0;
-    public static final double ARM_SCORE_SAMPLE_IN_HIGH = 1800; // Example position
-    public static final double ARM_EXTEND_PICK_UP = -200; // Example position
-    double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
+
     private ElapsedTime runtime = new ElapsedTime();
-    public double wristPosition = WRIST_FOLDED_IN;
     // Constants for motor power and timing
-    static final double FORWARD_SPEED = 0.6;
-    static final double TURN_SPEED = 0.5;
+    static public double FORWARD_SPEED = 0.25;
+    static public double FORWARD_TIME = 1.6;
+    static public int EXTEND_SPECIMEN_POSITION = -1400;
+    static public int ARM_SPECIMEN_POSITION = 1200;
     double extendPosition = 0;
     @Override
     public void runOpMode() {
@@ -46,11 +50,16 @@ public class AutonomousCrossaints extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
         armMotor = hardwareMap.get(DcMotor.class, "arm"); // Update with actual name
         extend = hardwareMap.get(DcMotor.class, "extend"); // Update with actual name
-
         // Set zero power behavior for arm and extension motors
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        /* Define and initialize servos.*/
+        intake = hardwareMap.get(CRServo.class, "intake");
+        wrist = hardwareMap.get(Servo.class, "wrist");
 
+        /* Make sure that the intake is off, and the wrist is folded in. */
+        intake.setPower(INTAKE_COLLECT);
+        wrist.setPosition(WRIST_FOLDED_IN);
 
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -91,55 +100,35 @@ public class AutonomousCrossaints extends LinearOpMode {
 
         waitForStart();
 
-        // Step 1: Strafe right for STRAFE_TIME seconds
-        runtime.reset();
-        strafe(0.25, STRAFE_TIME);
-        armMotor.setTargetPosition((int)ARM_SCORE_SAMPLE_IN_HIGH);
+        //extend and lift the arm
+
+        armMotor.setTargetPosition(ARM_SPECIMEN_POSITION);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        ((DcMotorEx) armMotor).setVelocity(3000);
-        runtime.reset();
-        extend.setTargetPosition((int)ARM_EXTEND_HIGH_BASKET);
+        ((DcMotorEx) armMotor).setVelocity(ARM_SPEED_UP);
+        waitForMotorsToFinish();
+        wrist.setPosition(WRIST_FOLDED_OUT);
+        sleep(500);
+        waitForMotorsToFinish();
+        extend.setTargetPosition(EXTEND_SPECIMEN_POSITION);
         extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        ((DcMotorEx) extend).setVelocity(3000);
-        while (runtime.seconds() < 4.0) {
-            telemetry.addData("arm pos", armMotor.getCurrentPosition());
-            telemetry.update();
-        }
-        sleep(10000);
-        runtime.reset();
-//        while (opModeIsActive() && runtime.seconds() < 1.0) {
-//            telemetry.addData("Path", "Moving forward: %2.5f S Elapsed", runtime.seconds());
-//            telemetry.update();
-//            armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
-//            extendPosition = ARM_EXTEND_HIGH_BASKET;
-//            armMotor.setTargetPosition((int) (armPosition));
-//            ((DcMotorEx) armMotor).setVelocity(2100);
-//            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//            extend.setTargetPosition((int) (extendPosition));
-//            ((DcMotorEx) extend).setVelocity(1000);
-//            extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        }
-////        // Step 2: Turn right for 1.3 seconds
-//        turnRight(TURN_SPEED);
-//        runtime.reset();
-//        while (opModeIsActive() && runtime.seconds() < 1.3) {
-//            telemetry.addData("Path", "Turning Right: %2.5f S Elapsed", runtime.seconds());
-//            telemetry.update();
-//        }
-//
-//        // Step 3: Drive forward for another 2 seconds
-//        allMotorsPower(FORWARD_SPEED);
-//        runtime.reset();
-//        while (opModeIsActive() && runtime.seconds() < 2.0) {
-//            telemetry.addData("Path", "Moving forward: %2.5f S Elapsed", runtime.seconds());
-//            telemetry.update();
-//        }
+        ((DcMotorEx) extend).setVelocity(EXTEND_SPEED);
+        drive(FORWARD_SPEED, FORWARD_TIME);  // Move the robot for 2.1 seconds
 
+        extend.setTargetPosition(0);
+        waitForMotorsToFinish();
 
-
+        armMotor.setTargetPosition(0);
+        waitForMotorsToFinish();
         telemetry.addData("Path", "Complete");
         telemetry.update();
+    }
+
+    private void waitForMotorsToFinish() {
+        while (extend.isBusy() || armMotor.isBusy()) {
+            telemetry.addData("Arm Position", armMotor.getCurrentPosition());
+            telemetry.addData("Extend Position", extend.getCurrentPosition());
+            telemetry.update();
+        }
     }
 
     // Helper methods for robot movement
