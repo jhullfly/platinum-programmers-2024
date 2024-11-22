@@ -21,8 +21,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 @Config
-@Autonomous(name="Basic Autonomous", group="Robot")
-public class AutonomousCrossaints extends LinearOpMode {
+@Autonomous(name="encoder_autonomous_Crossaints", group="Robot")
+public class encoder_autonomous_Crossaints extends LinearOpMode {
     // Declare motors
     private DcMotor leftFrontDrive = null;
     private DcMotor rightFrontDrive = null;
@@ -148,7 +148,22 @@ public class AutonomousCrossaints extends LinearOpMode {
         rightBackDrive.setPower(0);
         // Arm motor power is not included here to avoid unintended movement
     }
-
+    private void encoderdrive(double power, int distance) {
+        leftFrontDrive.setPower(power);
+        rightFrontDrive.setPower(power);
+        leftBackDrive.setPower(power);
+        rightBackDrive.setPower(power);
+        runtime.reset();
+        while (leftFrontDrive.getCurrentPosition()< distance) {
+            telemetry.addData("Path", "Moving forward: %2.5f S Elapsed", rightFrontDrive.getCurrentPosition());
+            telemetry.update();
+        }
+        leftFrontDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+        leftBackDrive.setPower(0);
+        rightBackDrive.setPower(0);
+        // Arm motor power is not included here to avoid unintended movement
+    }
     private void strafe(double power, double time) {
         leftFrontDrive.setPower(power);
         rightFrontDrive.setPower(-power);
