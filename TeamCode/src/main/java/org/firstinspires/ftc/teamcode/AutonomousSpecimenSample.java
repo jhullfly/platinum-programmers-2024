@@ -179,12 +179,12 @@ public class AutonomousSpecimenSample extends LinearOpMode {
 
     public AprilTagDetection getDetection() {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        if (currentDetections.size() == 0) {
-            return null;
-        } else {
-            return currentDetections.get(0);
+        for(AprilTagDetection detection : currentDetections) {
+            if (detection.id == 13 || detection.id == 16) {
+                return detection;
+            }
         }
-
+        return null;
     }
 
     public void driveToTag(double desiredDistance) {
