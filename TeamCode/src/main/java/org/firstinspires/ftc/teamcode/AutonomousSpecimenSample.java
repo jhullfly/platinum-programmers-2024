@@ -65,8 +65,6 @@ public class AutonomousSpecimenSample extends LinearOpMode {
     static public double FORWARD_SPEED = 0.25;
     static public double FORWARD_TIME = 1.6;
     static public int EXTEND_SPECIMEN_POSITION = -1400;
-    static public int EXTEND_SAMPLE_POSITION = -400;
-    static public double SAMPLE_PICKUP_TIME = 1.0;
     static public int ARM_SPECIMEN_POSITION = 1200;
     static public double STRAFE_TIME = 1.1;
     static public double STRAFE_POWER = 0.4;
@@ -158,9 +156,6 @@ public class AutonomousSpecimenSample extends LinearOpMode {
         turnRightToAprilTag(0.3);
         driveToTag(DESIRED_DISTANCE1);
         strafe(STRAFE_POWER, STRAFE_TIME);
-        extend.setTargetPosition(EXTEND_SAMPLE_POSITION);
-        betterSleep(SAMPLE_PICKUP_TIME);
-        extend.setTargetPosition(0);
         strafe(-1*STRAFE_POWER, STRAFE_TIME);
         driveToTag(DESIRED_DISTANCE2);
         betterSleep(5.0);
@@ -294,22 +289,11 @@ public class AutonomousSpecimenSample extends LinearOpMode {
     private void waitUntilAprilTagDetected() {
         boolean targetFound = false;    // Set to true when an AprilTag target is detected
 
-        while (targetFound == false) {
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            for (AprilTagDetection detection : currentDetections) {
-                // Look to see if we have size info on this tag.
-                if (detection.metadata != null) {
-                    //  Check to see if we want to track towards this tag.
-
-                    // Yes, we want to use this tag.
-                    targetFound = true;
-                    desiredTag = detection;
-                    break;  // don't look any further.
-
-                } else {
-                    // This tag is NOT in the library, so we don't have enough information to track to it.
-                    telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
-                }
+        while (opModeIsActive() && targetFound == false) {
+            AprilTagDetection detection = getDetection();
+            if (detection != null) {
+                desiredTag = detection;
+                targetFound = true;
             }
         }
 
