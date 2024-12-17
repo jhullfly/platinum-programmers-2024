@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Thread.sleep;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -56,7 +58,7 @@ public class DrivingCrossaints extends OpMode {
     public static double ARM_EXTEND_PICK_UP    = -350;
     public static double ARM_EXTEND_RESET = 0;
     public static double ARM_EXTEND_SUBMERSE = -1200;
-    public static double ARM_SUBMERSIBLE = 200;
+    public static double ARM_SUBMERSIBLE = 210;
     public static double ARM_LOW_HANG1 = 1300;//put arm into posion to hang and exstend
     public static double ARM_EXTEND_HANG = -1000 ;             //retract and pull arm down
     public static double ARM_LOW_HANG2 = 1200;           //folds rest of body for full hang
@@ -66,8 +68,8 @@ public class DrivingCrossaints extends OpMode {
     public static double INTAKE_DEPOSIT    =  0.25;
 
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
-    public static double WRIST_FOLDED_IN   = 0.2;
-    public static double WRIST_FOLDED_OUT  = 0.67;
+    public static double WRIST_FOLDED_IN   = 0;
+    public static double WRIST_FOLDED_OUT  = 0.5;
     public static double WRIST_WIGGLE = 0.05;
     public static double WRIST_WIGGLE_TIME_SEC = 1.0;
 
@@ -150,10 +152,13 @@ public class DrivingCrossaints extends OpMode {
     boolean isWiggling = false;
     boolean firstLoop = true;
     @Override
-    public void loop() {
+    public void loop()  {
+        double slowFactor = 0.5;
+
         if(gamepad2.a){
             armPosition=ARM_LOW_HANG1;
             extendPosition=ARM_EXTEND_HANG;
+            intake.setPower(INTAKE_OFF);
         }
         if(gamepad2.b){
             armPosition=ARM_LOW_HANG2;
@@ -201,6 +206,9 @@ public class DrivingCrossaints extends OpMode {
             wristPosition = WRIST_FOLDED_OUT;
             isWiggling = false;
         }
+        else if (gamepad2.y){
+            slowFactor = 1;
+        }
 
         else if (gamepad1.dpad_left) { /* This turns off the intake, folds in the wrist, and moves the arm back to folded inside the robot. This is also the starting configuration */
             armPosition = ARM_COLLAPSED_INTO_ROBOT;
@@ -213,6 +221,11 @@ public class DrivingCrossaints extends OpMode {
         else if (gamepad1.dpad_right){
             /**/
             armPosition = ARM_SUBMERSIBLE;
+            armMotor.setTargetPosition((int)ARM_SUBMERSIBLE);
+            try {
+                sleep(500);
+            } catch (InterruptedException e) {
+            }
             extendPosition = ARM_EXTEND_SUBMERSE;
             isWiggling = true;
             intake.setPower(INTAKE_COLLECT);
@@ -310,7 +323,6 @@ public class DrivingCrossaints extends OpMode {
         double backLeftPower =   drive - strafe + rotate;
         double backRightPower =  drive + strafe - rotate;
         if(!gamepad2.b) {
-            double slowFactor = 0.5;
             frontLeftPower = frontLeftPower*slowFactor;
             frontRightPower = frontRightPower*slowFactor;
             backLeftPower = backLeftPower*slowFactor;
