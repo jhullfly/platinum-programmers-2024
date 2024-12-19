@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_EXTEND_HIGH_BASKET;
+import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_EXTEND_PICK_UP;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SCORE_SAMPLE_IN_HIGH;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SPEED_DOWN;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SPEED_UP;
@@ -66,14 +67,20 @@ public class AutonomousSpecimenSample extends LinearOpMode {
     static public double FORWARD_TIME = 1.6;
     static public int EXTEND_SPECIMEN_POSITION = -1400;
     static public int ARM_SPECIMEN_POSITION = 1200;
-    static public double STRAFE_TIME = 1.1;
+    static public double STRAFE_TIME_FIRST = 1.2;
+    static public double STRAFE_TIME_SECOND = 1.0;
     static public double STRAFE_POWER = 0.4;
     public static double DESIRED_DISTANCE1 = 26.0; //  this is how close the camera should get to the target (inches)
-    public static double DESIRED_DISTANCE2 = 19.0; //  this is how close the camera should get to the target (inches)
+    public static double DESIRED_DISTANCE2 = 19.0; //
+    public static double DESIRED_DISTANCE3 = 16.0; // this is how close the camera should get to the target (inches)
     public static int WEBCAM_EXPOSURE = 3;
     public static int WEBCAM_GAIN = 150;
     public static double TAG_GIVE_UP_TIME = 0.5;
-
+    public static double LINE_UP_TO_BUCKET_POWER = 0.4;
+    public static double LINE_UP_TO_BUCKET_TIME = 0.52;
+    public static double DRIVE_FORWARD_TO_BUCKET_TIME = 0.45;
+    public static double DRIVE_FORWARD_TO_BUCKET_POWER = 0.5;
+    public static double INTAKE_DEPOSIT_TIME = 1.0;
     @Override
     public void runOpMode() {
         // Initialize the hardware variables
@@ -140,30 +147,52 @@ public class AutonomousSpecimenSample extends LinearOpMode {
         armMotor.setTargetPosition(ARM_SPECIMEN_POSITION);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         ((DcMotorEx) armMotor).setVelocity(ARM_SPEED_UP);
-        waitForMotorsToFinish(2000);
+        waitForMotorsToFinish(0.5);
         wrist.setPosition(WRIST_FOLDED_OUT);
         betterSleep(.500);
-        waitForMotorsToFinish(1000);
         extend.setTargetPosition(EXTEND_SPECIMEN_POSITION);
         extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         ((DcMotorEx) extend).setVelocity(EXTEND_SPEED);
         drive(FORWARD_SPEED, FORWARD_TIME);  // Move the robot for 2.1 seconds
         extend.setTargetPosition(0);
-        betterSleep(.500);
+        betterSleep(.300);
         armMotor.setTargetPosition(0);
         ((DcMotorEx) armMotor).setVelocity(ARM_SPEED_DOWN);
         betterSleep(.500);
-        turnRightToAprilTag(0.3);
+        turnRightToAprilTag(0.5);
         driveToTag(DESIRED_DISTANCE1);
-        strafe(STRAFE_POWER, STRAFE_TIME);
-        strafe(-1*STRAFE_POWER, STRAFE_TIME);
-        driveToTag(DESIRED_DISTANCE2);
-        betterSleep(5.0);
-
-
-
+        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_FIRST);
+        driveToTag(DESIRED_DISTANCE3);
+        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_SECOND);
+        betterSleep(10);
         //telemetry.addData("Path", "Complete");
         //telemetry.update();
+    }
+
+    public void driveFromAprilTagToSamplePickupDepositAndGoBack(double strafeTime) {
+        strafe(STRAFE_POWER, strafeTime);
+        extend.setTargetPosition((int)ARM_EXTEND_PICK_UP);
+        betterSleep(0.5);
+        extend.setTargetPosition(0);
+        strafe(-1*STRAFE_POWER, strafeTime);
+        driveToTag(DESIRED_DISTANCE2);
+        turnLeft(LINE_UP_TO_BUCKET_POWER, LINE_UP_TO_BUCKET_TIME); // Line up to bucket
+        armMotor.setTargetPosition((int)ARM_SCORE_SAMPLE_IN_HIGH);
+        waitForMotorsToFinish(0.5);
+        extend.setTargetPosition((int)ARM_EXTEND_HIGH_BASKET);
+        waitForMotorsToFinish(1);
+        drive(DRIVE_FORWARD_TO_BUCKET_POWER, DRIVE_FORWARD_TO_BUCKET_TIME);
+        betterSleep(1);
+        intake.setPower(INTAKE_DEPOSIT); // Deposit sample
+        betterSleep(INTAKE_DEPOSIT_TIME);
+        drive(-1*DRIVE_FORWARD_TO_BUCKET_POWER, DRIVE_FORWARD_TO_BUCKET_TIME);
+        extend.setTargetPosition(0);
+        waitForMotorsToFinish(1);
+        armMotor.setTargetPosition(0);
+        waitForMotorsToFinish(0.5);
+        intake.setPower(INTAKE_COLLECT);
+        turnLeft(-1*LINE_UP_TO_BUCKET_POWER,LINE_UP_TO_BUCKET_TIME);
+
     }
 
     public void betterSleep(double time) {
@@ -307,7 +336,7 @@ public class AutonomousSpecimenSample extends LinearOpMode {
         waitUntilAprilTagDetected();
         stopMoving();
     }
-    private void turnRight(double power, double time) {
+    private void turnLeft(double power, double time) {
         leftFrontDrive.setPower(power);
         leftBackDrive.setPower(power);
         rightFrontDrive.setPower(-power);
