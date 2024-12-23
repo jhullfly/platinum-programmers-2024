@@ -1,54 +1,25 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_EXTEND_HIGH_BASKET;
-import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_EXTEND_PICK_UP;
-import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SCORE_SAMPLE_IN_HIGH;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SPEED_DOWN;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.ARM_SPEED_UP;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.EXTEND_SPEED;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.INTAKE_COLLECT;
-import static org.firstinspires.ftc.teamcode.DrivingCrossaints.INTAKE_DEPOSIT;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.INTAKE_OFF;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.WRIST_FOLDED_IN;
 import static org.firstinspires.ftc.teamcode.DrivingCrossaints.WRIST_FOLDED_OUT;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.ANGLE_GO_SLOW;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.ANGLE_MAX_ERROR;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.MAX_AUTO_SPEED;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.MAX_AUTO_STRAFE;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.MAX_AUTO_TURN;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.MINIMUM_DRIVE_SPEED;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.RANGE_GO_SLOW;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.RANGE_MAX_ERROR;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.SPEED_GAIN;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.STRAFE_GAIN;
-import static org.firstinspires.ftc.teamcode.RobotAutoDriveToAprilTagOmni.TURN_GAIN;
-
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Config
-@Autonomous(name="Autonomous Specimen+Sample", group="Robot")
-public class AutonomousSpecimenSample extends PlatinumBase {
+@Autonomous(name="Autonomous Sample & Sample + Sample", group="Robot")
+public class AutonomousSampleSampleSample extends PlatinumBase {
 
     @Override
     public void runOpMode() {
@@ -110,26 +81,14 @@ public class AutonomousSpecimenSample extends PlatinumBase {
         setManualExposure(WEBCAM_EXPOSURE, WEBCAM_GAIN);  // Use low exposure time to reduce motion blur
 
         waitForStart();
-
+        wrist.setPosition(WRIST_FOLDED_OUT);
         //extend and lift the arm
 
-        armMotor.setTargetPosition(ARM_SPECIMEN_POSITION);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        ((DcMotorEx) armMotor).setVelocity(ARM_SPEED_UP);
-        waitForMotorsToFinish(FIRST_ARM_LIFT_WAIT_TIME);
-        wrist.setPosition(WRIST_FOLDED_OUT);
-        betterSleep(WRIST_FOLD_OUT_WAIT_TIME);
-        extend.setTargetPosition(EXTEND_SPECIMEN_POSITION);
-        extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        ((DcMotorEx) extend).setVelocity(EXTEND_SPEED);
-        drive(FORWARD_SPEED, FORWARD_TIME);
-        extend.setTargetPosition(0);
-        betterSleep(.300);
-        armMotor.setTargetPosition(0);
-        ((DcMotorEx) armMotor).setVelocity(ARM_SPEED_DOWN);
-        betterSleep(.500);
-        turnRightToAprilTag(0.5);
+
         driveToTag(DESIRED_DISTANCE1, 10.0);
+        deposit();
+        waitForMotorsToFinish(2);
+        driveToTag(DESIRED_DISTANCE1, 2.0);
         driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_FIRST);
         driveToTag(DESIRED_DISTANCE3, 2.0);
         driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_SECOND);
