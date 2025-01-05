@@ -66,9 +66,7 @@ public abstract class PlatinumBase extends LinearOpMode {
     static public double FORWARD_TIME = 1.6;
     static public int EXTEND_SPECIMEN_POSITION = -1400;
     static public int ARM_SPECIMEN_POSITION = 1200;
-    static public double STRAFE_TIME_FIRST = .5;
-    static public double STRAFE_TIME_SECOND = 0.5;
-    static public double STRAFE_POWER = 0.8;
+
     public static double DESIRED_DISTANCE1 = 26.0; //  this is how close the camera should get to the target (inches)
     public static double DESIRED_DISTANCE2 = 19.0; //
     public static double DESIRED_DISTANCE3 = 16.0; // this is how close the camera should get to the target (inches)
@@ -88,14 +86,14 @@ public abstract class PlatinumBase extends LinearOpMode {
    
         // Initialize the hardware variables
        
-    public void driveFromAprilTagToSamplePickupDepositAndGoBack(double strafeTime) {
-        strafe(STRAFE_POWER, strafeTime);
+    public void driveFromAprilTagToSamplePickupDepositAndGoBack(double strafeTime,double strafePower) {
+        strafe(strafePower, strafeTime);
         extend.setTargetPosition((int)ARM_EXTEND_PICK_UP); // pickup sample
         betterSleep(0.5);
         armMotor.setTargetPosition((int)ARM_SCORE_SAMPLE_IN_HIGH);
         waitForMotorsToFinish(0.5);
         extend.setTargetPosition((int)ARM_EXTEND_HIGH_BASKET);
-        strafe(-1*STRAFE_POWER, strafeTime);
+        strafe(-1*strafePower, strafeTime);
         driveToTag(DESIRED_DISTANCE2, 2.0);
         turnLeft(LINE_UP_TO_BUCKET_POWER, LINE_UP_TO_BUCKET_TIME); // Line up to bucket
         drive(DRIVE_FORWARD_TO_BUCKET_POWER, DRIVE_FORWARD_TO_BUCKET_TIME);

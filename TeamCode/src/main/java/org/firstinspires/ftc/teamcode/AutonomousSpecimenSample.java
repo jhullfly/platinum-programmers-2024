@@ -49,7 +49,9 @@ import java.util.concurrent.TimeUnit;
 @Config
 @Autonomous(name="Autonomous Specimen+Sample", group="Robot")
 public class AutonomousSpecimenSample extends PlatinumBase {
-
+    static public double STRAFE_TIME_FIRST = 1.1;
+    static public double STRAFE_TIME_SECOND = 1;
+    static public double STRAFE_POWER = 0.4;
     @Override
     public void runOpMode() {
         // Initialize the hardware variables
@@ -130,9 +132,9 @@ public class AutonomousSpecimenSample extends PlatinumBase {
         betterSleep(.500);
         turnRightToAprilTag(0.5);
         driveToTag(DESIRED_DISTANCE1, 10.0);
-        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_FIRST);
+        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_FIRST,STRAFE_POWER);
         driveToTag(DESIRED_DISTANCE3, 2.0);
-        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_SECOND);
+        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_SECOND,STRAFE_POWER);
         intake.setPower(INTAKE_OFF);
         telemetry.addData("Path", "Complete");
         telemetry.update();

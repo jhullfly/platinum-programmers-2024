@@ -20,7 +20,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 @Config
 @Autonomous(name="Autonomous Sample & Sample + Sample", group="Robot")
 public class AutonomousSampleSampleSample extends PlatinumBase {
-
+    static public double STRAFE_TIME_FIRST = 1.1;
+    static public double STRAFE_TIME_SECOND = 1.0;
+    static public double STRAFE_POWER = 0.4;
     @Override
     public void runOpMode() {
         // Initialize the hardware variables
@@ -85,13 +87,13 @@ public class AutonomousSampleSampleSample extends PlatinumBase {
         //extend and lift the arm
 
 
-        driveToTag(DESIRED_DISTANCE1, 10.0);
+        //driveToTag(DESIRED_DISTANCE1, 2.0);
         deposit();
         waitForMotorsToFinish(2);
         driveToTag(DESIRED_DISTANCE1, 2.0);
-        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_FIRST);
+        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_FIRST,STRAFE_POWER);
         driveToTag(DESIRED_DISTANCE3, 2.0);
-        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_SECOND);
+        driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_SECOND,STRAFE_POWER);
         intake.setPower(INTAKE_OFF);
         telemetry.addData("Path", "Complete");
         telemetry.update();
