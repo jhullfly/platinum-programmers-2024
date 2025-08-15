@@ -30,6 +30,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -49,8 +50,8 @@ import java.util.concurrent.TimeUnit;
 @Config
 @Autonomous(name="Autonomous Specimen+Sample", group="Robot")
 public class AutonomousSpecimenSample extends PlatinumBase {
-    static public double STRAFE_TIME_FIRST = 1.1;
-    static public double STRAFE_TIME_SECOND = 1;
+    static public double STRAFE_TIME_FIRST = 800;
+    static public double STRAFE_TIME_SECOND = 800;
     static public double STRAFE_POWER = 0.4;
     @Override
     public void runOpMode() {
@@ -69,7 +70,7 @@ public class AutonomousSpecimenSample extends PlatinumBase {
         wrist = hardwareMap.get(Servo.class, "wrist");
 
         /* Make sure that the intake is off, and the wrist is folded in. */
-        intake.setPower(INTAKE_COLLECT);
+
         wrist.setPosition(WRIST_FOLDED_IN);
 
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -112,7 +113,7 @@ public class AutonomousSpecimenSample extends PlatinumBase {
         setManualExposure(WEBCAM_EXPOSURE, WEBCAM_GAIN);  // Use low exposure time to reduce motion blur
 
         waitForStart();
-
+        intake.setPower(INTAKE_COLLECT);
         //extend and lift the arm
 
         armMotor.setTargetPosition(ARM_SPECIMEN_POSITION);
@@ -131,11 +132,12 @@ public class AutonomousSpecimenSample extends PlatinumBase {
         ((DcMotorEx) armMotor).setVelocity(ARM_SPEED_DOWN);
         betterSleep(.500);
         turnRightToAprilTag(0.5);
-        driveToTag(DESIRED_DISTANCE1, 10.0);
+        driveToTag(DESIRED_DISTANCE1, 9.0);
         driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_FIRST,STRAFE_POWER);
         driveToTag(DESIRED_DISTANCE3, 2.0);
         driveFromAprilTagToSamplePickupDepositAndGoBack(STRAFE_TIME_SECOND,STRAFE_POWER);
         intake.setPower(INTAKE_OFF);
+
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }

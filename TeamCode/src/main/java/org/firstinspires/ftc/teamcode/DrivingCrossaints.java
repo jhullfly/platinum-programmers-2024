@@ -74,7 +74,7 @@ public class DrivingCrossaints extends OpMode {
     public static double WRIST_WIGGLE_TIME_SEC = 1.0;
 
     /* A number in degrees that the triggers can adjust the arm position by */
-    public static double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
+    public static double FUDGE_FACTOR = 8 * ARM_TICKS_PER_DEGREE;
 
     /* Variables that are used to set the arm to a specific position */
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
@@ -118,13 +118,12 @@ public class DrivingCrossaints extends OpMode {
         /* Before starting the armMotor. We'll make sure the TargetPosition is set to 0.
         Then we'll set the RunMode to RUN_TO_POSITION. And we'll ask it to stop and reset encoder.
         If you do not have the encoder plugged into this motor, it will not run in this code. */
-        armMotor.setTargetPosition(0);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
+        //armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armPosition= armMotor.getCurrentPosition();
 
         extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        extendPosition = extend.getCurrentPosition();
         /*This sets the maximum current that the control hub will apply to the arm before throwing a flag */
         ((DcMotorEx) extend).setCurrentAlert(5, CurrentUnit.AMPS);
 
@@ -132,9 +131,8 @@ public class DrivingCrossaints extends OpMode {
         /* Before starting the armMotor. We'll make sure the TargetPosition is set to 0.
         Then we'll set the RunMode to RUN_TO_POSITION. And we'll ask it to stop and reset encoder.
         If you do not have the encoder plugged into this motor, it will not run in this code. */
-        extend.setTargetPosition(0);
         extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         /* Define and initialize servos.*/
         intake = hardwareMap.get(CRServo.class, "intake");
@@ -142,8 +140,6 @@ public class DrivingCrossaints extends OpMode {
 
         /* Make sure that the intake is off, and the wrist is folded in. */
         intake.setPower(INTAKE_OFF);
-        wrist.setPosition(wristPosition);
-
         /* Send telemetry message to signify robot waiting */
         telemetry.addLine("Robot Ready.");
         telemetry.update();
@@ -159,6 +155,7 @@ public class DrivingCrossaints extends OpMode {
             armPosition=ARM_LOW_HANG1;
             extendPosition=ARM_EXTEND_HANG;
             intake.setPower(INTAKE_OFF);
+            isWiggling=false;
         }
         if(gamepad2.b){
             armPosition=ARM_LOW_HANG2;
@@ -168,6 +165,7 @@ public class DrivingCrossaints extends OpMode {
             armPosition=0;
             extendPosition=0;
         }
+
         if (firstLoop) {
             firstLoop = false;
             wristPosition = WRIST_FOLDED_OUT;
@@ -194,6 +192,7 @@ public class DrivingCrossaints extends OpMode {
         }
 
         else if (gamepad1.left_bumper){
+            armSpeed = ARM_SPEED_DOWN;
             armPosition = ARM_CLEAR_BARRIER;
             extendPosition = ARM_EXTEND_RESET;
             wristPosition = WRIST_FOLDED_OUT;
@@ -206,26 +205,15 @@ public class DrivingCrossaints extends OpMode {
             wristPosition = WRIST_FOLDED_OUT;
             isWiggling = false;
         }
-        else if (gamepad2.y){
+        else if (gamepad1.dpad_left){
             slowFactor = 1;
         }
 
-        else if (gamepad1.dpad_left) { /* This turns off the intake, folds in the wrist, and moves the arm back to folded inside the robot. This is also the starting configuration */
-            armPosition = ARM_COLLAPSED_INTO_ROBOT;
-            intake.setPower(INTAKE_OFF);
-            wristPosition = WRIST_FOLDED_OUT;
-            extendPosition = ARM_EXTEND_RESET;
-            isWiggling = false;
-        }
 
         else if (gamepad1.dpad_right){
             /**/
             armPosition = ARM_SUBMERSIBLE;
             armMotor.setTargetPosition((int)ARM_SUBMERSIBLE);
-            try {
-                sleep(500);
-            } catch (InterruptedException e) {
-            }
             extendPosition = ARM_EXTEND_SUBMERSE;
             isWiggling = true;
             intake.setPower(INTAKE_COLLECT);
@@ -251,17 +239,7 @@ public class DrivingCrossaints extends OpMode {
             wrist.setPosition(wristPosition);
         }
 
-        if (gamepad2.dpad_up){
-           armPosition =  ARM_LOW_HANG1;
-        }
 
-        if (gamepad2.dpad_right){
-
-        }
-
-        if (gamepad2.dpad_down){
-
-        }
 
 
 

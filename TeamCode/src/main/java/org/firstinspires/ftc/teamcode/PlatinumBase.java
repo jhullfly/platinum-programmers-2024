@@ -67,9 +67,9 @@ public abstract class PlatinumBase extends LinearOpMode {
     static public int EXTEND_SPECIMEN_POSITION = -1400;
     static public int ARM_SPECIMEN_POSITION = 1200;
 
-    public static double DESIRED_DISTANCE1 = 26.0; //  this is how close the camera should get to the target (inches)
+    public static double DESIRED_DISTANCE1 = 24.0; //  this is how close the camera should get to the target (inches)
     public static double DESIRED_DISTANCE2 = 19.0; //
-    public static double DESIRED_DISTANCE3 = 16.0; // this is how close the camera should get to the target (inches)
+    public static double DESIRED_DISTANCE3 = 15.0; // this is how close the camera should get to the target (inches)
     public static int WEBCAM_EXPOSURE = 3;
     public static int WEBCAM_GAIN = 150;
     public static double TAG_GIVE_UP_TIME = 0.5;
@@ -79,7 +79,7 @@ public abstract class PlatinumBase extends LinearOpMode {
     public static double DRIVE_FORWARD_TO_BUCKET_POWER = 0.5;
     public static double INTAKE_DEPOSIT_TIME = 1.0;
     public static double FIRST_ARM_LIFT_WAIT_TIME = 0.1;
-    public static double WRIST_FOLD_OUT_WAIT_TIME = 0.1;
+    public static double WRIST_FOLD_OUT_WAIT_TIME = 0.5;
     public static double PICKUP_STRAFE_POWER = 0.2;
     public static double PICKUP_STRAFE_TIME = 0.2;
     
@@ -249,14 +249,20 @@ public abstract class PlatinumBase extends LinearOpMode {
         rightBackDrive.setPower(0);
     }
 
-    protected void strafe(double power, double time) {
+    protected void strafe(double power, double encoder_ticks) {
+        rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftFrontDrive.setPower(power);
         rightFrontDrive.setPower(-power);
         leftBackDrive.setPower(-power);
         rightBackDrive.setPower(power);
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < time) {
+        while (opModeIsActive() &&Math.abs(rightFrontDrive.getCurrentPosition()) < encoder_ticks) {
             telemetry.addData("Path", "strafing forward: %2.5f S Elapsed", runtime.seconds());
+            telemetry.addData("left front", leftFrontDrive.getCurrentPosition());
+            telemetry.addData("right front", rightFrontDrive.getCurrentPosition());
+            telemetry.addData("left back", leftBackDrive.getCurrentPosition());
+            telemetry.addData("right back", rightBackDrive.getCurrentPosition());
             telemetry.update();
         }
         stopMoving();

@@ -20,8 +20,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 @Config
 @Autonomous(name="Autonomous Sample & Sample + Sample", group="Robot")
 public class AutonomousSampleSampleSample extends PlatinumBase {
-    static public double STRAFE_TIME_FIRST = 1.1;
-    static public double STRAFE_TIME_SECOND = 1.0;
+    static public double STRAFE_TIME_FIRST = 875;
+    static public double STRAFE_TIME_SECOND = 800;
     static public double STRAFE_POWER = 0.4;
     @Override
     public void runOpMode() {
